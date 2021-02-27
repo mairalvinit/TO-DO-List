@@ -2,18 +2,46 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const date = require(__dirname+"/date.js");
 
-//console.log(date);
+//require mongoose
+const mongoose = require("mongoose");
 
 const app = express();
 
-const items = [];
-const workItems = [];
+
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(express.static("public"))
+
+mongoose.connect("mongoose://localhost:27017/todoListDB",{useNewUrlParser: true,useUnifiedTopology:true});
+
+const itemsSchema = {
+  name : String,
+};
+
+const Item = mongoose.model("Item",itemsSchema);
+
+//new items
+
+const work = new Item({
+  name : "Work"
+});
+const eat = new Item({
+  name : "Eat"
+});
+const sleep = new Item({
+  name : "Sleep"
+})
+
+Item.insertMany([work,eat,sleep],function(err){
+  if (err) {
+    console.log(err);
+  } else {
+    console.log("Succefully inserted 3 items!!");
+  }
+})
 
 app.get("/", function(req, res) {
 
