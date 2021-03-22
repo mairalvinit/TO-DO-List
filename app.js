@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const date = require(__dirname+"/date.js");
+const _ = require("lodash");
+
 
 //require mongoose
 const mongoose = require("mongoose");
@@ -101,20 +103,31 @@ if(listName==="Today"){
 
 app.post("/delete",function(req,res){
 const checkedItemID = req.body.checkbox;
-Item.findByIdAndRemove(checkedItemID,function(err){
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Succefully Deleted !!");
-  }
-})
-res.redirect("/");
+const listName = req.body.listName;
+
+if(listName === "Today"){
+  Item.findByIdAndRemove(checkedItemID,function(err){
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Succefully Deleted !!");
+    }
+  })
+  res.redirect("/");
+}else{
+  List.findOneAndUpdate({name : listName},{$pull : {items : {_id : checkedItemID}}},function(err,foundList){
+    if(!err){
+      res.redirect("/"+listName);
+    }
+  })
+}
+
 })
 
 
 
 app.get("/:routeName",function(req,res){
-const customListName =  req.params.routeName;
+const customListName =  _.capitalize(req.params.routeName);
 List.findOne({name : customListName},function(err,foundList){
   if(!err){
     if (!foundList) {
